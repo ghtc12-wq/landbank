@@ -1,0 +1,801 @@
+import { useState, useEffect } from "react";
+import {
+  BarChart, Bar, PieChart, Pie, Cell,
+  XAxis, YAxis, CartesianGrid, Tooltip,
+  ResponsiveContainer
+} from "recharts";
+import {
+  Home, Layers, TrendingDown, Lightbulb, FileText,
+  Plus, Trash2, Edit2, Check, ChevronDown, ChevronUp,
+  Menu, X, LogOut, Search,
+  Building2, MapPin, RefreshCw
+} from "lucide-react";
+
+// ─── MOCK DATA ────────────────────────────────────────────────────────────────
+const INITIAL_TERRENOS = [
+  { id: 1, nome: 'Área Guilherme', uf: 'MG', cidade: 'Alfenas', areaMq: '18345.0', unidadesEstimadas: 288, status: 'Viabilidade', contato: '', observacoes: '' },
+  { id: 2, nome: 'Clube Campestre', uf: 'MG', cidade: 'Barbacena', areaMq: '21000.0', unidadesEstimadas: 380, status: 'Contrato', contato: '', observacoes: '' },
+  { id: 3, nome: 'Área Gilsa - Remax', uf: 'MG', cidade: 'Barbacena', areaMq: '8165.0', unidadesEstimadas: 0, status: 'Estudo', contato: '', observacoes: '' },
+  { id: 4, nome: 'Área Gilsa - Remax', uf: 'MG', cidade: 'Barbacena', areaMq: '20180.0', unidadesEstimadas: 400, status: 'Viabilidade', contato: '', observacoes: '' },
+  { id: 5, nome: 'Área do Geraldo Kennyd', uf: 'MG', cidade: 'Barbacena', areaMq: '13978.0', unidadesEstimadas: 272, status: 'Viabilidade', contato: '', observacoes: '' },
+  { id: 6, nome: 'Área do Rafael (Advogado)', uf: 'MG', cidade: 'Barbacena', areaMq: '0', unidadesEstimadas: 0, status: 'Estudo', contato: '', observacoes: '' },
+  { id: 7, nome: 'Área Igor e Fernanda', uf: 'SP', cidade: 'Bragança Paulista', areaMq: '17286.0', unidadesEstimadas: 360, status: 'Estudo', contato: '', observacoes: '' },
+  { id: 8, nome: 'Área 20.000m²', uf: 'MG', cidade: 'Brumadinho', areaMq: '20800.0', unidadesEstimadas: 336, status: 'Contrato', contato: '', observacoes: '' },
+  { id: 9, nome: 'Citrolândia', uf: 'MG', cidade: 'Betim', areaMq: '11750.0', unidadesEstimadas: 192, status: 'Viabilidade', contato: '', observacoes: '' },
+  { id: 10, nome: 'Área Bráurio - Geraldo Kennyd', uf: 'MG', cidade: 'Conselheiro Lafaiete', areaMq: '26000.0', unidadesEstimadas: 380, status: 'Viabilidade', contato: '', observacoes: '' },
+  { id: 11, nome: 'Área Bruno e Mário', uf: 'MG', cidade: 'Conselheiro Lafaiete', areaMq: '95820.0', unidadesEstimadas: 768, status: 'Contrato', contato: '', observacoes: '' },
+  { id: 12, nome: 'Área Carlota', uf: 'MG', cidade: 'Conselheiro Lafaiete', areaMq: '28000.0', unidadesEstimadas: 544, status: 'Contrato', contato: '', observacoes: '' },
+  { id: 13, nome: 'Marcelo Morbideli', uf: 'SP', cidade: 'Extrema', areaMq: '37000.0', unidadesEstimadas: 0, status: 'Estudo', contato: '', observacoes: '' },
+  { id: 14, nome: 'Área Av. Vicente Catalani 1.262', uf: 'SP', cidade: 'Itatiba', areaMq: '13352.0', unidadesEstimadas: 0, status: 'Estudo', contato: '', observacoes: '' },
+  { id: 15, nome: 'Área 20.000m²', uf: 'SP', cidade: 'Itatiba', areaMq: '20000.0', unidadesEstimadas: 0, status: 'Estudo', contato: '', observacoes: '' },
+  { id: 16, nome: 'Avenida Lenhita', uf: 'MG', cidade: 'Itaúna', areaMq: '0', unidadesEstimadas: 0, status: 'Estudo', contato: '', observacoes: '' },
+  { id: 17, nome: 'Luciana Remax', uf: 'MG', cidade: 'Juiz de Fora', areaMq: '0', unidadesEstimadas: 0, status: 'Estudo', contato: '', observacoes: '' },
+  { id: 18, nome: 'Edson', uf: 'SP', cidade: 'Mogi Guaçu', areaMq: '17000.0', unidadesEstimadas: 0, status: 'Estudo', contato: '', observacoes: '' },
+  { id: 19, nome: 'Heber (Poços de Caldas)', uf: 'SP', cidade: 'Mogi Guaçu', areaMq: '18700.0', unidadesEstimadas: 288, status: 'Viabilidade', contato: '', observacoes: '' },
+  { id: 20, nome: 'Edson (Leilão)', uf: 'SP', cidade: 'Mogi Guaçu', areaMq: '23000.0', unidadesEstimadas: 0, status: 'Estudo', contato: '', observacoes: '' },
+  { id: 21, nome: 'Eduardo (Rodrigo Maldonado)', uf: 'SP', cidade: 'Mogi Guaçu', areaMq: '26498.0', unidadesEstimadas: 384, status: 'Contrato', contato: '', observacoes: '' },
+  { id: 22, nome: 'Edson (Área de 33.000m²)', uf: 'SP', cidade: 'Mogi Guaçu', areaMq: '33000.0', unidadesEstimadas: 0, status: 'Estudo', contato: '', observacoes: '' },
+  { id: 23, nome: 'Edson (João Simão)', uf: 'SP', cidade: 'Mogi Guaçu', areaMq: '49007.94', unidadesEstimadas: 560, status: 'Viabilidade', contato: '', observacoes: '' },
+  { id: 24, nome: 'Área Mogi Mirim', uf: 'SP', cidade: 'Mogi Mirim', areaMq: '13009.0', unidadesEstimadas: 0, status: 'Estudo', contato: '', observacoes: '' },
+  { id: 25, nome: 'Área Pará de Minas', uf: 'MG', cidade: 'Pará de Minas', areaMq: '12091.9', unidadesEstimadas: 208, status: 'Viabilidade', contato: '', observacoes: '' },
+  { id: 26, nome: 'Cristiane (22.970m²)', uf: 'MG', cidade: 'Poços de Caldas', areaMq: '22970.0', unidadesEstimadas: 480, status: 'Contrato', contato: '', observacoes: '' },
+  { id: 27, nome: 'Paulo Vianna (36.000m²)', uf: 'MG', cidade: 'Poços de Caldas', areaMq: '36000.0', unidadesEstimadas: 672, status: 'Estudo', contato: '', observacoes: '' },
+  { id: 28, nome: 'Tayna (28.440m²)', uf: 'MG', cidade: 'Poços de Caldas', areaMq: '28440.0', unidadesEstimadas: 600, status: 'Viabilidade', contato: '', observacoes: '' },
+  { id: 29, nome: 'Área Carlota (31.000m²)', uf: 'MG', cidade: 'Poços de Caldas', areaMq: '31000.0', unidadesEstimadas: 0, status: 'Estudo', contato: '', observacoes: '' },
+  { id: 30, nome: 'Área Carlota (44.000m²)', uf: 'MG', cidade: 'Poços de Caldas', areaMq: '44000.0', unidadesEstimadas: 0, status: 'Estudo', contato: '', observacoes: '' },
+  { id: 31, nome: 'Área Carlota (107.109m²)', uf: 'MG', cidade: 'Poços de Caldas', areaMq: '107109.1', unidadesEstimadas: 0, status: 'Estudo', contato: '', observacoes: '' },
+  { id: 32, nome: 'Área Carlota (Fazenda Retiro Santa Rita)', uf: 'MG', cidade: 'Poços de Caldas', areaMq: '0', unidadesEstimadas: 0, status: 'Estudo', contato: '', observacoes: '' },
+  { id: 33, nome: 'Área Carlota (50.000m²)', uf: 'MG', cidade: 'Poços de Caldas', areaMq: '50000.0', unidadesEstimadas: 0, status: 'Estudo', contato: '', observacoes: '' },
+  { id: 34, nome: 'Rua Policena Mascarenhas', uf: 'MG', cidade: 'Sete Lagoas', areaMq: '0', unidadesEstimadas: 0, status: 'Estudo', contato: '', observacoes: '' },
+  { id: 35, nome: 'Grazi (Terrenista Varginha)', uf: 'MG', cidade: 'Varginha', areaMq: '0', unidadesEstimadas: 0, status: 'Estudo', contato: '', observacoes: '' },
+  { id: 36, nome: 'Luiz Paulo Rosa (11.750m²) - Maria Bregalda', uf: 'MG', cidade: 'Varginha', areaMq: '11750.0', unidadesEstimadas: 0, status: 'Contrato', contato: '', observacoes: '' },
+  { id: 37, nome: 'Luiz Paulo Rosa (30.000m²)', uf: 'MG', cidade: 'Varginha', areaMq: '30000.0', unidadesEstimadas: 0, status: 'Estudo', contato: '', observacoes: '' },
+  { id: 38, nome: 'Bairro Ponte Nova', uf: 'SP', cidade: 'Itatiba', areaMq: '0', unidadesEstimadas: 0, status: 'Estudo', contato: '', observacoes: '' },
+  { id: 39, nome: 'Chacaras Vale de Santa Fé', uf: 'SP', cidade: 'Vinhedos', areaMq: '0', unidadesEstimadas: 0, status: 'Estudo', contato: '', observacoes: '' },
+  { id: 40, nome: 'Chacaras Vale de Santa Fé (14.000m²)', uf: 'SP', cidade: 'Vinhedos', areaMq: '14000.0', unidadesEstimadas: 0, status: 'Estudo', contato: '', observacoes: '' },
+  { id: 41, nome: 'Estrada Boiadeira da Boiadeira  2412', uf: 'SP', cidade: 'Vinhedos', areaMq: '0', unidadesEstimadas: 0, status: 'Estudo', contato: '', observacoes: '' },
+  { id: 42, nome: 'Rua Emília Hoffmann Pedroni', uf: 'SP', cidade: 'Sumaré', areaMq: '0', unidadesEstimadas: 0, status: 'Estudo', contato: '', observacoes: '' },
+  { id: 43, nome: 'Rua Vereador José Albini, Jardim Firenze', uf: 'SP', cidade: 'Santa Bárbara d\'Oeste', areaMq: '0', unidadesEstimadas: 0, status: 'Estudo', contato: '', observacoes: '' },
+  { id: 44, nome: 'Área Gilsa - Clube', uf: 'MG', cidade: 'Barbacena', areaMq: '17000.0', unidadesEstimadas: 240, status: 'Proposta', contato: '', observacoes: 'Terrenista aguardando encaminhamento de proposta para realização de contrato' },
+];
+
+const INSIGHTS_MOCK = [
+  { id: 1, titulo: "Alta demanda em Varginha",      conteudo: "O mercado de Varginha apresentou crescimento de 18% em 2024, com forte demanda por imóveis residenciais de médio padrão.", categoria: "Mercado",     relevancia: 9 },
+  { id: 2, titulo: "Oportunidade em Extrema-MG",    conteudo: "Extrema segue atraindo indústrias e trabalhadores, criando demanda habitacional crescente. Terrenos valorizaram 12% no último trimestre.", categoria: "Geográfico",  relevancia: 8 },
+  { id: 3, titulo: "Risco regulatório em São Paulo", conteudo: "Novas regras de zoneamento em vigor desde março podem impactar aprovação de projetos verticais no centro expandido.", categoria: "Regulatório", relevancia: 7 },
+];
+
+const STATUS_OPTIONS = ["Análise", "Estudo", "Visita", "Viabilidade", "Proposta", "Contrato"];
+const STATUS_COLORS = {
+  "Análise":     { bg: "rgba(148,163,184,0.15)", text: "#94a3b8", border: "rgba(148,163,184,0.3)", dot: "#94a3b8" },
+  "Estudo":      { bg: "rgba(96,165,250,0.15)",  text: "#60a5fa", border: "rgba(96,165,250,0.3)",  dot: "#60a5fa" },
+  "Visita":      { bg: "rgba(34,211,238,0.15)",  text: "#22d3ee", border: "rgba(34,211,238,0.3)",  dot: "#22d3ee" },
+  "Viabilidade": { bg: "rgba(167,139,250,0.15)", text: "#a78bfa", border: "rgba(167,139,250,0.3)", dot: "#a78bfa" },
+  "Proposta":    { bg: "rgba(251,191,36,0.15)",  text: "#fbbf24", border: "rgba(251,191,36,0.3)",  dot: "#fbbf24" },
+  "Contrato":    { bg: "rgba(52,211,153,0.15)",  text: "#34d399", border: "rgba(52,211,153,0.3)",  dot: "#34d399" },
+};
+
+// ─── SHARED COMPONENTS ────────────────────────────────────────────────────────
+function Card({ children, className = "" }) {
+  return (
+    <div className={`rounded-xl border border-white/8 bg-white/4 ${className}`}>
+      {children}
+    </div>
+  );
+}
+
+function StatusBadge({ status }) {
+  const c = STATUS_COLORS[status] || STATUS_COLORS["Análise"];
+  return (
+    <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold border"
+      style={{ background: c.bg, color: c.text, borderColor: c.border }}>
+      <span className="w-1.5 h-1.5 rounded-full" style={{ background: c.dot }} />
+      {status}
+    </span>
+  );
+}
+
+function MetricCard({ label, value, sub, icon: Icon, color = "#60a5fa" }) {
+  return (
+    <Card className="p-5">
+      <div className="flex items-start justify-between">
+        <div>
+          <p className="text-xs text-white/40 font-medium uppercase tracking-wider mb-1">{label}</p>
+          <p className="text-3xl font-bold text-white mt-1">{value}</p>
+          {sub && <p className="text-xs text-white/30 mt-1">{sub}</p>}
+        </div>
+        <div className="w-10 h-10 rounded-lg flex items-center justify-center" style={{ background: `${color}22` }}>
+          <Icon size={20} style={{ color }} />
+        </div>
+      </div>
+    </Card>
+  );
+}
+
+// ─── PAGE: DASHBOARD ──────────────────────────────────────────────────────────
+function PageDashboard({ terrenos }) {
+  const total = terrenos.length;
+  const totalUnidades = terrenos.reduce((s, t) => s + (t.unidadesEstimadas || 0), 0);
+  const totalArea = terrenos.reduce((s, t) => s + (parseFloat(t.areaMq) || 0), 0);
+
+  const porStatus = STATUS_OPTIONS.map(s => ({
+    name: s,
+    value: terrenos.filter(t => t.status === s).length,
+    fill: STATUS_COLORS[s]?.dot,
+  })).filter(d => d.value > 0);
+
+  const porCidade = Object.entries(
+    terrenos.reduce((acc, t) => { acc[t.cidade] = (acc[t.cidade] || 0) + 1; return acc; }, {})
+  ).sort((a, b) => b[1] - a[1]).slice(0, 8).map(([cidade, quantidade]) => ({ cidade, quantidade }));
+
+  const funnelData = STATUS_OPTIONS.map(s => ({
+    name: s, value: terrenos.filter(t => t.status === s).length,
+  }));
+
+  return (
+    <div className="p-6 space-y-6">
+      <div>
+        <h1 className="text-2xl font-bold text-white">Dashboard</h1>
+        <p className="text-white/40 text-sm mt-1">Visão geral do portfólio Landbank</p>
+      </div>
+
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+        <MetricCard label="Total de Terrenos"   value={total}                                          sub="cadastrados"    icon={Layers}    color="#60a5fa" />
+        <MetricCard label="Unidades Planejadas" value={totalUnidades.toLocaleString("pt-BR")}          sub="estimadas"      icon={Building2} color="#a78bfa" />
+        <MetricCard label="Área Total"          value={`${(totalArea/1000).toFixed(0)}k m²`}          sub={`${totalArea.toLocaleString("pt-BR")} m²`} icon={MapPin} color="#22d3ee" />
+        <MetricCard label="Em Contrato"         value={terrenos.filter(t=>t.status==="Contrato").length} sub="fechados"     icon={Check}     color="#34d399" />
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+        <Card className="p-5">
+          <h2 className="text-xs font-semibold text-white/40 uppercase tracking-wider mb-4">Funil por Etapa</h2>
+          <ResponsiveContainer width="100%" height={240}>
+            <BarChart data={funnelData} barSize={32}>
+              <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.06)" />
+              <XAxis dataKey="name" stroke="rgba(255,255,255,0.3)" tick={{ fontSize: 11 }} />
+              <YAxis stroke="rgba(255,255,255,0.3)" tick={{ fontSize: 11 }} />
+              <Tooltip contentStyle={{ background: "#0f172a", border: "1px solid rgba(255,255,255,0.1)", borderRadius: 8 }} labelStyle={{ color: "#fff" }} itemStyle={{ color: "#60a5fa" }} />
+              <Bar dataKey="value" radius={[6, 6, 0, 0]}>
+                {funnelData.map((entry, i) => <Cell key={i} fill={STATUS_COLORS[entry.name]?.dot || "#60a5fa"} />)}
+              </Bar>
+            </BarChart>
+          </ResponsiveContainer>
+        </Card>
+
+        <Card className="p-5">
+          <h2 className="text-xs font-semibold text-white/40 uppercase tracking-wider mb-4">Distribuição por Cidade</h2>
+          <ResponsiveContainer width="100%" height={240}>
+            <BarChart data={porCidade} layout="vertical" barSize={18}>
+              <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.06)" horizontal={false} />
+              <XAxis type="number" stroke="rgba(255,255,255,0.3)" tick={{ fontSize: 11 }} />
+              <YAxis dataKey="cidade" type="category" width={90} stroke="rgba(255,255,255,0.3)" tick={{ fontSize: 11 }} />
+              <Tooltip contentStyle={{ background: "#0f172a", border: "1px solid rgba(255,255,255,0.1)", borderRadius: 8 }} labelStyle={{ color: "#fff" }} />
+              <Bar dataKey="quantidade" fill="#60a5fa" radius={[0, 6, 6, 0]} />
+            </BarChart>
+          </ResponsiveContainer>
+        </Card>
+      </div>
+
+      <Card className="p-5">
+        <h2 className="text-xs font-semibold text-white/40 uppercase tracking-wider mb-4">Status do Portfólio</h2>
+        <div className="flex flex-col md:flex-row items-center gap-6">
+          <ResponsiveContainer width={260} height={220}>
+            <PieChart>
+              <Pie data={porStatus} cx="50%" cy="50%" innerRadius={55} outerRadius={90} paddingAngle={3} dataKey="value">
+                {porStatus.map((entry, i) => <Cell key={i} fill={entry.fill} />)}
+              </Pie>
+              <Tooltip contentStyle={{ background: "#0f172a", border: "1px solid rgba(255,255,255,0.1)", borderRadius: 8 }} />
+            </PieChart>
+          </ResponsiveContainer>
+          <div className="flex flex-wrap gap-3">
+            {porStatus.map((d, i) => (
+              <div key={i} className="flex items-center gap-2 text-sm">
+                <span className="w-3 h-3 rounded-full" style={{ background: d.fill }} />
+                <span className="text-white/50">{d.name}:</span>
+                <span className="text-white font-semibold">{d.value}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      </Card>
+    </div>
+  );
+}
+
+// ─── PAGE: TERRENOS ───────────────────────────────────────────────────────────
+function PageTerrenos({ terrenos, setTerrenos }) {
+  const [search, setSearch] = useState("");
+  const [filterStatus, setFilterStatus] = useState("");
+  const [filterUF, setFilterUF] = useState("");
+  const [showForm, setShowForm] = useState(false);
+  const [editId, setEditId] = useState(null);
+  const [form, setForm] = useState({ nome: "", uf: "MG", cidade: "", areaMq: "", unidadesEstimadas: "", status: "Análise", contato: "", observacoes: "" });
+
+  const filtered = terrenos.filter(t => {
+    const s = search.toLowerCase();
+    return (!search || t.nome.toLowerCase().includes(s) || t.cidade.toLowerCase().includes(s))
+      && (!filterStatus || t.status === filterStatus)
+      && (!filterUF || t.uf === filterUF);
+  });
+
+  const handleSave = () => {
+    if (!form.nome || !form.cidade || !form.areaMq) return;
+    if (editId !== null) {
+      setTerrenos(prev => prev.map(t => t.id === editId ? { ...t, ...form, unidadesEstimadas: parseInt(form.unidadesEstimadas) || 0 } : t));
+      setEditId(null);
+    } else {
+      const newId = Math.max(...terrenos.map(t => t.id), 0) + 1;
+      setTerrenos(prev => [...prev, { ...form, id: newId, unidadesEstimadas: parseInt(form.unidadesEstimadas) || 0 }]);
+    }
+    setForm({ nome: "", uf: "MG", cidade: "", areaMq: "", unidadesEstimadas: "", status: "Análise", contato: "", observacoes: "" });
+    setShowForm(false);
+  };
+
+  const handleEdit = (t) => {
+    setForm({ ...t, areaMq: t.areaMq.toString(), unidadesEstimadas: t.unidadesEstimadas.toString() });
+    setEditId(t.id);
+    setShowForm(true);
+  };
+
+  // Auto-salva enquanto edita (500ms após parar de digitar)
+  useEffect(() => {
+    if (editId === null || !form.nome) return;
+    const timer = setTimeout(() => {
+      setTerrenos(prev => prev.map(t => t.id === editId
+        ? { ...t, ...form, unidadesEstimadas: parseInt(form.unidadesEstimadas) || 0 }
+        : t
+      ));
+    }, 500);
+    return () => clearTimeout(timer);
+  }, [form, editId]);
+
+  const inpCls = "border border-white/15 rounded-lg px-3 py-2 text-sm placeholder:text-white/40 focus:outline-none focus:border-blue-500/60";
+  const inpStyle = { background: "#1e2d4a", color: "#ffffff", colorScheme: "dark" };
+
+  return (
+    <div className="p-6 space-y-5">
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-2xl font-bold text-white">Terrenos</h1>
+          <p className="text-white/40 text-sm mt-1">{filtered.length} de {terrenos.length} registros</p>
+        </div>
+        <button onClick={() => { setShowForm(!showForm); setEditId(null); setForm({ nome:"",uf:"MG",cidade:"",areaMq:"",unidadesEstimadas:"",status:"Análise",contato:"",observacoes:"" }); }}
+          className="flex items-center gap-2 px-4 py-2 rounded-lg bg-blue-500 hover:bg-blue-400 text-white text-sm font-medium transition-colors">
+          <Plus size={16} /> Novo Terreno
+        </button>
+      </div>
+
+      {showForm && (
+        <Card className="p-5">
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-base font-semibold text-white">{editId ? "Editar Terreno" : "Adicionar Novo Terreno"}</h2>
+            {editId && <span className="text-xs px-2 py-1 rounded-full bg-green-500/15 text-green-400 border border-green-500/30">✓ Salva automático</span>}
+          </div>
+          <div className="grid grid-cols-2 gap-3">
+            <input className={`col-span-2 ${inpCls}`} style={{background:"#1e2d4a",color:"#ffffff",colorScheme:"dark"}} placeholder="Nome do terreno *" value={form.nome} onChange={e => setForm({...form, nome: e.target.value})} />
+            <select className={inpCls} style={{background:"#1e2d4a",color:"#ffffff",colorScheme:"dark"}} value={form.uf} onChange={e => setForm({...form, uf: e.target.value})}>
+              {["MG","SP","RJ","ES","PR","RS","SC"].map(uf => <option key={uf} value={uf} style={{background:"#1e2d4a",color:"#fff"}}>{uf}</option>)}
+            </select>
+            <input className={inpCls} style={{background:"#1e2d4a",color:"#ffffff",colorScheme:"dark"}} placeholder="Cidade *" value={form.cidade} onChange={e => setForm({...form, cidade: e.target.value})} />
+            <input type="number" className={inpCls} style={{background:"#1e2d4a",color:"#ffffff",colorScheme:"dark"}} placeholder="Área (m²) *" value={form.areaMq} onChange={e => setForm({...form, areaMq: e.target.value})} />
+            <input type="number" className={inpCls} style={{background:"#1e2d4a",color:"#ffffff",colorScheme:"dark"}} placeholder="Unidades estimadas" value={form.unidadesEstimadas} onChange={e => setForm({...form, unidadesEstimadas: e.target.value})} />
+            <select className={`col-span-2 ${inpCls}`} style={{background:"#1e2d4a",color:"#ffffff",colorScheme:"dark"}} value={form.status} onChange={e => setForm({...form, status: e.target.value})}>
+              {STATUS_OPTIONS.map(s => <option key={s} value={s} style={{background:"#1e2d4a",color:"#fff"}}>{s}</option>)}
+            </select>
+            <input className={inpCls} style={{background:"#1e2d4a",color:"#ffffff",colorScheme:"dark"}} placeholder="Contato" value={form.contato} onChange={e => setForm({...form, contato: e.target.value})} />
+            <input className={inpCls} style={{background:"#1e2d4a",color:"#ffffff",colorScheme:"dark"}} placeholder="Observações" value={form.observacoes} onChange={e => setForm({...form, observacoes: e.target.value})} />
+          </div>
+          <div className="flex gap-2 mt-4">
+            <button onClick={handleSave} className="flex-1 py-2 rounded-lg bg-blue-500 hover:bg-blue-400 text-white text-sm font-medium transition-colors">{editId ? "Confirmar e Fechar" : "Criar Terreno"}</button>
+            <button onClick={() => { setShowForm(false); setEditId(null); }} className="flex-1 py-2 rounded-lg border border-white/10 text-white/50 hover:text-white text-sm transition-colors">Cancelar</button>
+          </div>
+        </Card>
+      )}
+
+      <div className="flex flex-wrap gap-3">
+        <div className="relative flex-1 min-w-48">
+          <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-white/30" />
+          <input className="w-full pl-8 pr-3 py-2 border border-white/15 rounded-lg text-sm placeholder:text-white/40 focus:outline-none focus:border-blue-500/60" style={{background:"#1e2d4a",color:"#ffffff",colorScheme:"dark"}}
+            placeholder="Buscar..." value={search} onChange={e => setSearch(e.target.value)} />
+        </div>
+        <select className="border border-white/15 rounded-lg px-3 py-2 text-sm focus:outline-none" style={{background:"#1e2d4a",color:"#ffffff",colorScheme:"dark"}} value={filterStatus} onChange={e => setFilterStatus(e.target.value)}>
+          <option value="" style={{background:"#0f172a"}}>Todos status</option>
+          {STATUS_OPTIONS.map(s => <option key={s} value={s} style={{background:"#1e2d4a",color:"#fff"}}>{s}</option>)}
+        </select>
+        <select className="border border-white/15 rounded-lg px-3 py-2 text-sm focus:outline-none" style={{background:"#1e2d4a",color:"#ffffff",colorScheme:"dark"}} value={filterUF} onChange={e => setFilterUF(e.target.value)}>
+          <option value="" style={{background:"#0f172a"}}>Todos UFs</option>
+          {["MG","SP","RJ","ES","PR"].map(uf => <option key={uf} value={uf} style={{background:"#1e2d4a",color:"#fff"}}>{uf}</option>)}
+        </select>
+      </div>
+
+      <Card className="overflow-hidden">
+        <div className="overflow-x-auto">
+          <table className="w-full text-sm">
+            <thead>
+              <tr className="border-b border-white/8">
+                {["Nome","Localização","Área m²","Unidades","Status","Ações"].map(h => (
+                  <th key={h} className={`px-5 py-3 text-xs font-semibold text-white/30 uppercase tracking-wider ${h==="Área m²"||h==="Unidades"?"text-right":h==="Ações"?"text-center":"text-left"}`}>{h}</th>
+                ))}
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-white/5">
+              {filtered.map(t => (
+                <tr key={t.id} className="hover:bg-white/3 transition-colors">
+                  <td className="px-5 py-3.5">
+                    <div className="font-medium text-white">{t.nome}</div>
+                    {t.contato && <div className="text-xs text-white/30 mt-0.5">{t.contato}</div>}
+                  </td>
+                  <td className="px-5 py-3.5 text-white/50">{t.uf} · {t.cidade}</td>
+                  <td className="px-5 py-3.5 text-right text-white/70 font-mono text-xs">{parseFloat(t.areaMq).toLocaleString("pt-BR")}</td>
+                  <td className="px-5 py-3.5 text-right text-white/70">{t.unidadesEstimadas || "—"}</td>
+                  <td className="px-5 py-3.5">
+                    <select value={t.status} onChange={e => setTerrenos(prev => prev.map(x => x.id===t.id ? {...x,status:e.target.value}:x))}
+                      className="bg-transparent text-xs font-semibold rounded-full px-2 py-1 border cursor-pointer focus:outline-none"
+                      style={{ color: STATUS_COLORS[t.status]?.dot, borderColor: `${STATUS_COLORS[t.status]?.dot}44` }}>
+                      {STATUS_OPTIONS.map(s => <option key={s} value={s} style={{background:"#0f172a",color:"#fff"}}>{s}</option>)}
+                    </select>
+                  </td>
+                  <td className="px-5 py-3.5">
+                    <div className="flex items-center justify-center gap-1">
+                      <button onClick={() => handleEdit(t)} className="p-1.5 rounded-md hover:bg-blue-500/20 text-white/30 hover:text-blue-400 transition-colors"><Edit2 size={14} /></button>
+                      <button onClick={() => setTerrenos(prev => prev.filter(x => x.id !== t.id))} className="p-1.5 rounded-md hover:bg-red-500/20 text-white/30 hover:text-red-400 transition-colors"><Trash2 size={14} /></button>
+                    </div>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+          {filtered.length === 0 && <div className="text-center py-12 text-white/30">Nenhum terreno encontrado</div>}
+        </div>
+      </Card>
+    </div>
+  );
+}
+
+// ─── PAGE: FUNIL ──────────────────────────────────────────────────────────────
+function PageFunil({ terrenos, setTerrenos }) {
+  // Qual ETAPA está expandida (mostra lista de terrenos)
+  const [expandedEtapa, setExpandedEtapa] = useState(null);
+  // Qual TERRENO (dentro da etapa) está expandido (mostra detalhes)
+  const [expandedTerreno, setExpandedTerreno] = useState(null);
+
+  const handleStatusChange = (id, status) => {
+    setTerrenos(prev => prev.map(t => t.id === id ? { ...t, status } : t));
+  };
+
+  const gruposPorEtapa = STATUS_OPTIONS.map(s => ({
+    status: s,
+    terrenos: terrenos.filter(t => t.status === s),
+  }));
+
+  const totalTerrenos = terrenos.length;
+
+  return (
+    <div className="p-6 space-y-3">
+      <div className="mb-6">
+        <h1 className="text-2xl font-bold text-white">Funil de Aquisições</h1>
+        <p className="text-white/40 text-sm mt-1">Clique em uma etapa para ver os terrenos</p>
+      </div>
+
+      {gruposPorEtapa.map(grupo => {
+        const pct = totalTerrenos > 0 ? (grupo.terrenos.length / totalTerrenos) * 100 : 0;
+        const c = STATUS_COLORS[grupo.status];
+        const isEtapaOpen = expandedEtapa === grupo.status;
+
+        return (
+          <div key={grupo.status}>
+            {/* ── HEADER DA ETAPA (sempre visível, clicável) ── */}
+            <button
+              onClick={() => {
+                setExpandedEtapa(isEtapaOpen ? null : grupo.status);
+                setExpandedTerreno(null);
+              }}
+              className="w-full flex items-center gap-3 px-4 py-3 rounded-xl border transition-all text-left"
+              style={{
+                background: isEtapaOpen ? `${c.dot}18` : "rgba(255,255,255,0.03)",
+                borderColor: isEtapaOpen ? `${c.dot}50` : "rgba(255,255,255,0.07)",
+              }}
+            >
+              {/* Dot colorido */}
+              <span className="w-2.5 h-2.5 rounded-full flex-shrink-0" style={{ background: c.dot }} />
+
+              {/* Nome + contagem */}
+              <span className="text-sm font-semibold" style={{ color: isEtapaOpen ? c.dot : "rgba(255,255,255,0.75)" }}>
+                {grupo.status}
+              </span>
+              <span className="text-xs px-2 py-0.5 rounded-full font-medium" style={{ background: `${c.dot}22`, color: c.dot }}>
+                {grupo.terrenos.length}
+              </span>
+
+              {/* Barra de progresso */}
+              <div className="flex-1 h-1.5 bg-white/6 rounded-full overflow-hidden">
+                <div className="h-full rounded-full transition-all duration-500" style={{ width: `${pct}%`, background: c.dot }} />
+              </div>
+              <span className="text-xs text-white/30 w-10 text-right flex-shrink-0">{pct.toFixed(0)}%</span>
+
+              {/* Chevron */}
+              {grupo.terrenos.length > 0
+                ? isEtapaOpen
+                  ? <ChevronUp size={16} style={{ color: c.dot }} className="flex-shrink-0" />
+                  : <ChevronDown size={16} className="text-white/25 flex-shrink-0" />
+                : <span className="w-4 flex-shrink-0" />
+              }
+            </button>
+
+            {/* ── LISTA DE TERRENOS (visível só se etapa expandida) ── */}
+            {isEtapaOpen && (
+              <div className="mt-2 ml-4 space-y-2">
+                {grupo.terrenos.length === 0 && (
+                  <p className="text-xs text-white/25 italic px-2 py-3">Nenhum terreno nesta etapa</p>
+                )}
+
+                {grupo.terrenos.map(t => {
+                  const isTerrenoOpen = expandedTerreno === t.id;
+                  return (
+                    <Card key={t.id} className="overflow-hidden">
+                      {/* Row do terreno */}
+                      <button
+                        className="w-full flex items-center justify-between px-4 py-3 hover:bg-white/3 transition-colors text-left"
+                        onClick={() => setExpandedTerreno(isTerrenoOpen ? null : t.id)}
+                      >
+                        <div className="flex-1 min-w-0">
+                          <p className="font-medium text-white text-sm truncate">{t.nome}</p>
+                          <p className="text-xs text-white/35 mt-0.5">{t.cidade} · {t.uf}</p>
+                        </div>
+                        <div className="flex items-center gap-3 ml-4 flex-shrink-0">
+                          <span className="text-xs text-white/30 font-mono">{parseFloat(t.areaMq).toLocaleString("pt-BR")} m²</span>
+                          {isTerrenoOpen
+                            ? <ChevronUp size={15} className="text-white/30" />
+                            : <ChevronDown size={15} className="text-white/30" />
+                          }
+                        </div>
+                      </button>
+
+                      {/* Detalhes do terreno expandido */}
+                      {isTerrenoOpen && (
+                        <div className="px-4 pb-4 border-t border-white/6 space-y-4 pt-3">
+                          <div className="grid grid-cols-2 gap-3 text-sm">
+                            <div>
+                              <p className="text-xs text-white/30">Área</p>
+                              <p className="text-white font-semibold">{parseFloat(t.areaMq).toLocaleString("pt-BR")} m²</p>
+                            </div>
+                            <div>
+                              <p className="text-xs text-white/30">Unidades</p>
+                              <p className="text-white font-semibold">{t.unidadesEstimadas || "—"}</p>
+                            </div>
+                            {t.contato && (
+                              <div>
+                                <p className="text-xs text-white/30">Contato</p>
+                                <p className="text-white">{t.contato}</p>
+                              </div>
+                            )}
+                            {t.observacoes && (
+                              <div className="col-span-2">
+                                <p className="text-xs text-white/30">Observações</p>
+                                <p className="text-white/60">{t.observacoes}</p>
+                              </div>
+                            )}
+                          </div>
+
+                          {/* Mover para outra etapa */}
+                          <div>
+                            <p className="text-xs text-white/30 mb-2">Mover para etapa</p>
+                            <div className="flex flex-wrap gap-1.5">
+                              {STATUS_OPTIONS.map(s => {
+                                const active = t.status === s;
+                                const sc = STATUS_COLORS[s];
+                                return (
+                                  <button key={s} onClick={() => handleStatusChange(t.id, s)}
+                                    className="px-2.5 py-1 rounded-full text-xs font-medium border transition-colors"
+                                    style={active
+                                      ? { background: sc.dot, color: "#000", borderColor: sc.dot }
+                                      : { background: "transparent", color: "rgba(255,255,255,0.35)", borderColor: "rgba(255,255,255,0.12)" }
+                                    }>
+                                    {s}
+                                  </button>
+                                );
+                              })}
+                            </div>
+                          </div>
+                        </div>
+                      )}
+                    </Card>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
+// ─── PAGE: INSIGHTS ───────────────────────────────────────────────────────────
+function PageInsights() {
+  const [insights, setInsights] = useState(INSIGHTS_MOCK);
+  const catColor = { "Mercado": "#60a5fa", "Geográfico": "#34d399", "Regulatório": "#fbbf24" };
+
+  return (
+    <div className="p-6 space-y-5">
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-2xl font-bold text-white">Insights</h1>
+          <p className="text-white/40 text-sm mt-1">Análises e oportunidades do mercado</p>
+        </div>
+        <button className="flex items-center gap-2 px-4 py-2 rounded-lg bg-violet-500/20 border border-violet-500/30 text-violet-300 text-sm font-medium hover:bg-violet-500/30 transition-colors">
+          <RefreshCw size={14} /> Gerar insights
+        </button>
+      </div>
+      <div className="space-y-3">
+        {insights.map(insight => (
+          <Card key={insight.id} className="p-5">
+            <div className="flex items-start justify-between gap-4">
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center gap-2 mb-2">
+                  <span className="text-xs font-semibold px-2 py-0.5 rounded-full"
+                    style={{ background: `${catColor[insight.categoria] || "#60a5fa"}22`, color: catColor[insight.categoria] || "#60a5fa" }}>
+                    {insight.categoria}
+                  </span>
+                  <div className="flex gap-0.5">
+                    {Array.from({ length: 10 }, (_, i) => (
+                      <div key={i} className="w-1.5 h-1.5 rounded-full"
+                        style={{ background: i < insight.relevancia ? (catColor[insight.categoria] || "#60a5fa") : "rgba(255,255,255,0.1)" }} />
+                    ))}
+                  </div>
+                </div>
+                <h3 className="font-semibold text-white text-sm mb-1">{insight.titulo}</h3>
+                <p className="text-white/45 text-xs leading-relaxed">{insight.conteudo}</p>
+              </div>
+              <button onClick={() => setInsights(prev => prev.filter(i => i.id !== insight.id))}
+                className="p-1.5 rounded-md hover:bg-red-500/20 text-white/20 hover:text-red-400 transition-colors flex-shrink-0">
+                <Trash2 size={14} />
+              </button>
+            </div>
+          </Card>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+// ─── PAGE: RELATÓRIOS ─────────────────────────────────────────────────────────
+function PageRelatorios({ terrenos }) {
+  const porUF = Object.entries(
+    terrenos.reduce((acc, t) => { acc[t.uf] = (acc[t.uf] || 0) + 1; return acc; }, {})
+  ).map(([uf, count]) => ({ uf, count })).sort((a, b) => b.count - a.count);
+
+  const areaTotalPorStatus = STATUS_OPTIONS.map(s => ({
+    status: s,
+    area: terrenos.filter(t => t.status === s).reduce((sum, t) => sum + parseFloat(t.areaMq || 0), 0),
+    unidades: terrenos.filter(t => t.status === s).reduce((sum, t) => sum + (t.unidadesEstimadas || 0), 0),
+  }));
+
+  return (
+    <div className="p-6 space-y-5">
+      <div>
+        <h1 className="text-2xl font-bold text-white">Relatórios</h1>
+        <p className="text-white/40 text-sm mt-1">Análises consolidadas do portfólio</p>
+      </div>
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+        <Card className="p-5">
+          <h2 className="text-xs font-semibold text-white/40 uppercase tracking-wider mb-4">Terrenos por UF</h2>
+          <div className="space-y-3">
+            {porUF.map(({ uf, count }) => (
+              <div key={uf} className="flex items-center gap-3">
+                <span className="text-xs font-mono font-semibold text-white/40 w-8">{uf}</span>
+                <div className="flex-1 h-2 bg-white/5 rounded-full overflow-hidden">
+                  <div className="h-full rounded-full bg-blue-400" style={{ width: `${(count / terrenos.length) * 100}%` }} />
+                </div>
+                <span className="text-xs text-white/50 w-5 text-right">{count}</span>
+              </div>
+            ))}
+          </div>
+        </Card>
+        <Card className="p-5">
+          <h2 className="text-xs font-semibold text-white/40 uppercase tracking-wider mb-4">Área & Unidades por Status</h2>
+          <div className="space-y-2">
+            {areaTotalPorStatus.filter(d => d.area > 0).map(d => (
+              <div key={d.status} className="flex items-center justify-between py-1.5 border-b border-white/5 text-xs">
+                <StatusBadge status={d.status} />
+                <div className="flex gap-4 text-white/40">
+                  <span className="font-mono">{(d.area / 1000).toFixed(1)}k m²</span>
+                  <span>{d.unidades} un.</span>
+                </div>
+              </div>
+            ))}
+          </div>
+        </Card>
+      </div>
+      <Card className="p-5">
+        <h2 className="text-xs font-semibold text-white/40 uppercase tracking-wider mb-4">Área por Status (m²)</h2>
+        <ResponsiveContainer width="100%" height={220}>
+          <BarChart data={areaTotalPorStatus.filter(d => d.area > 0)}>
+            <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.06)" />
+            <XAxis dataKey="status" stroke="rgba(255,255,255,0.3)" tick={{ fontSize: 11 }} />
+            <YAxis stroke="rgba(255,255,255,0.3)" tick={{ fontSize: 11 }} tickFormatter={v => `${(v/1000).toFixed(0)}k`} />
+            <Tooltip contentStyle={{ background: "#0f172a", border: "1px solid rgba(255,255,255,0.1)", borderRadius: 8 }} labelStyle={{ color: "#fff" }}
+              formatter={v => [`${v.toLocaleString("pt-BR")} m²`, "Área"]} />
+            <Bar dataKey="area" radius={[6, 6, 0, 0]}>
+              {areaTotalPorStatus.filter(d => d.area > 0).map((d, i) => (
+                <Cell key={i} fill={STATUS_COLORS[d.status]?.dot || "#60a5fa"} />
+              ))}
+            </Bar>
+          </BarChart>
+        </ResponsiveContainer>
+      </Card>
+    </div>
+  );
+}
+
+// ─── MAIN APP ─────────────────────────────────────────────────────────────────
+const NAV_ITEMS = [
+  { id: "dashboard",  label: "Dashboard",  icon: Home },
+  { id: "terrenos",   label: "Terrenos",   icon: Layers },
+  { id: "funil",      label: "Funil",      icon: TrendingDown },
+  { id: "insights",   label: "Insights",   icon: Lightbulb },
+  { id: "relatorios", label: "Relatórios", icon: FileText },
+];
+
+export default function App() {
+  const [page, setPage] = useState("dashboard");
+  const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [terrenos, setTerrenos] = useState(INITIAL_TERRENOS);
+  const [storageReady, setStorageReady] = useState(false);
+  const [saveStatus, setSaveStatus] = useState(''); // '', 'saving', 'saved', 'error'
+
+  const DB_URL = "https://landbank-amarildo-default-rtdb.firebaseio.com";
+
+  // Carrega dados do Firebase ao iniciar
+  useEffect(() => {
+    async function load() {
+      try {
+        const res = await fetch(`${DB_URL}/terrenos.json`);
+        if (res.ok) {
+          const data = await res.json();
+          if (data && typeof data === 'object') {
+            const arr = Array.isArray(data)
+              ? data.filter(Boolean)
+              : Object.values(data).filter(Boolean);
+            if (arr.length > 0) setTerrenos(arr);
+          }
+        }
+      } catch (e) {
+        console.error('Erro ao carregar:', e);
+      }
+      setStorageReady(true);
+    }
+    load();
+  }, []);
+
+  const handleManualSave = async () => {
+    setSaveStatus('saving');
+    try {
+      const payload = {};
+      terrenos.forEach((t, i) => { payload[i] = t; });
+      const res = await fetch(`${DB_URL}/terrenos.json`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+      if (res.ok) {
+        setSaveStatus('saved');
+      } else {
+        const txt = await res.text();
+        console.error('Firebase error:', res.status, txt);
+        setSaveStatus('error');
+      }
+    } catch (e) {
+      console.error('Erro ao salvar:', e);
+      setSaveStatus('error');
+    }
+    setTimeout(() => setSaveStatus(''), 3000);
+  };
+
+  const renderPage = () => {
+    switch (page) {
+      case "dashboard":  return <PageDashboard terrenos={terrenos} />;
+      case "terrenos":   return <PageTerrenos terrenos={terrenos} setTerrenos={setTerrenos} />;
+      case "funil":      return <PageFunil terrenos={terrenos} setTerrenos={setTerrenos} />;
+      case "insights":   return <PageInsights terrenos={terrenos} />;
+      case "relatorios": return <PageRelatorios terrenos={terrenos} />;
+      default:           return <PageDashboard terrenos={terrenos} />;
+    }
+  };
+
+  return (
+    <div className="min-h-screen flex" style={{ background: "linear-gradient(135deg,#060b18 0%,#0a1628 50%,#080e1f 100%)", fontFamily: "system-ui,-apple-system,sans-serif" }}>
+      {/* Sidebar */}
+      <aside className="flex-shrink-0 flex flex-col transition-all duration-300"
+        style={{ width: sidebarOpen ? 220 : 64, background: "rgba(255,255,255,0.025)", borderRight: "1px solid rgba(255,255,255,0.07)" }}>
+        {/* Logo */}
+        <div className="flex items-center justify-between p-4 border-b" style={{ borderColor: "rgba(255,255,255,0.07)" }}>
+          {sidebarOpen && (
+            <div className="flex items-center gap-2">
+              <div className="w-7 h-7 rounded-lg bg-blue-500 flex items-center justify-center">
+                <Building2 size={14} className="text-white" />
+              </div>
+              <span className="text-sm font-bold text-white tracking-wider">LANDBANK</span>
+            </div>
+          )}
+          <button onClick={() => setSidebarOpen(!sidebarOpen)}
+            className="p-1.5 rounded-md text-white/30 hover:text-white/60 hover:bg-white/6 transition-colors">
+            {sidebarOpen ? <X size={16} /> : <Menu size={16} />}
+          </button>
+        </div>
+
+        {/* Nav */}
+        <nav className="flex-1 p-3 space-y-1">
+          {NAV_ITEMS.map(item => {
+            const active = page === item.id;
+            return (
+              <button key={item.id} onClick={() => setPage(item.id)}
+                className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors text-left"
+                style={{ background: active ? "rgba(96,165,250,0.15)" : "transparent", color: active ? "#60a5fa" : "rgba(255,255,255,0.4)" }}>
+                <item.icon size={17} className="flex-shrink-0" />
+                {sidebarOpen && <span className="text-sm font-medium">{item.label}</span>}
+              </button>
+            );
+          })}
+        </nav>
+
+        {/* Footer */}
+        <div className="p-3 border-t" style={{ borderColor: "rgba(255,255,255,0.07)" }}>
+          {sidebarOpen && (
+            <div className="mb-2 px-3">
+              <p className="text-xs text-white/20">Logado como</p>
+              <p className="text-xs font-semibold text-white/50 truncate">Amarildo Freitas</p>
+              {saveStatus === 'saving' && <p className="text-xs text-yellow-400/70 mt-1">⟳ Salvando...</p>}
+              {saveStatus === 'saved'  && <p className="text-xs text-green-400/70 mt-1">✓ Salvo na nuvem</p>}
+              {saveStatus === 'error'  && <p className="text-xs text-red-400/70 mt-1">✗ Erro ao salvar</p>}
+            </div>
+          )}
+          <button className="w-full flex items-center gap-3 px-3 py-2 rounded-lg text-white/25 hover:text-white/50 hover:bg-white/5 transition-colors">
+            <LogOut size={16} className="flex-shrink-0" />
+            {sidebarOpen && <span className="text-sm">Sair</span>}
+          </button>
+        </div>
+      </aside>
+
+      {/* Main */}
+      <main className="flex-1 overflow-auto">
+        {/* Barra de salvar fixo no topo */}
+        <div className="sticky top-0 z-50 flex items-center justify-end gap-3 px-6 py-2"
+          style={{background: "rgba(6,11,24,0.85)", backdropFilter: "blur(8px)", borderBottom: "1px solid rgba(255,255,255,0.06)"}}>
+          {saveStatus === 'saving' && (
+            <span className="text-xs text-yellow-400/80 flex items-center gap-1.5">
+              <svg className="animate-spin" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg>
+              Salvando...
+            </span>
+          )}
+          {saveStatus === 'saved' && (
+            <span className="text-xs text-green-400/80 flex items-center gap-1.5">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+              Salvo na nuvem
+            </span>
+          )}
+          {saveStatus === 'error' && (
+            <span className="text-xs text-red-400/80">✗ Erro ao salvar</span>
+          )}
+          <button
+            onClick={handleManualSave}
+            disabled={saveStatus === 'saving'}
+            className="flex items-center gap-2 px-4 py-1.5 rounded-lg text-sm font-medium transition-all"
+            style={{
+              background: saveStatus === 'saved' ? 'rgba(52,211,153,0.2)' : 'rgba(96,165,250,0.2)',
+              border: saveStatus === 'saved' ? '1px solid rgba(52,211,153,0.4)' : '1px solid rgba(96,165,250,0.4)',
+              color: saveStatus === 'saved' ? '#34d399' : '#60a5fa',
+              opacity: saveStatus === 'saving' ? 0.6 : 1
+            }}>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/>
+              <polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/>
+            </svg>
+            {saveStatus === 'saving' ? 'Salvando...' : saveStatus === 'saved' ? 'Salvo!' : 'Salvar'}
+          </button>
+        </div>
+        {renderPage()}
+      </main>
+    </div>
+  );
+}
